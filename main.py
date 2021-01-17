@@ -12,9 +12,23 @@ url = 'http://data.fixer.io/api/'
 ACCESS_KEY = os.environ.get('FIXER_API_KEY') 
 
 
-def stock_time_series(tickerSymbol, start = '2020-01-01' , end = datetime.today().strftime('%Y-%m-%d')):
-    tickerData = yf.Ticker(tickerSymbol)
-    tickerDf = tickerData.history(period='1d', start=start , end=end)
+st.sidebar.header('User Input Parameters')
+st.sidebar.write('Stocks')
+
+def stock_time_series_user_input():
+    # start_date = st.sidebar.slider('Start Date', value = datetime.today() - timedelta(365))
+    # final_date = st.sidebar.slider('Final Date', value = datetime.today())
+    start_date = st.sidebar.slider('Start Date', min_value= datetime(2015, 1, 1), max_value=datetime.today(), value = datetime.today() - timedelta(365))
+    final_date = st.sidebar.slider('Final Date', min_value= datetime(2015, 1, 1), max_value=datetime.today(), value = datetime.today())
+    start_date = start_date.strftime('%Y-%m-%d')
+    final_date = final_date.strftime('%Y-%m-%d')
+    return [start_date, final_date]
+
+start_end = stock_time_series_user_input()
+
+def stock_time_series(start_end):
+    tickerData = yf.Ticker('KO')
+    tickerDf = tickerData.history(period='1d', start=start_end[0] , end=start_end[1])
     return tickerDf
 
 
@@ -43,12 +57,14 @@ st.write("""
 ## Top Stocks and Currencies from all over the world
 """)
 
+
+
+
 st.write("**Major currencies (EURO BASE)**")
 st.write(make_request(url, TYPE='latest'))
-df = stock_time_series('KO', '2019-05-01')
+
+df = stock_time_series(start_end)
 st.write("**Coca-cola stock (KO) - Close**")
 st.line_chart(df.Close)
 st.write("**Coca-cola stock (KO) - Open**")
 st.line_chart(df.Volume)
-
-st.sidebar.header('User Input Parameters')
