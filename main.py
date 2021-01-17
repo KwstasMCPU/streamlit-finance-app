@@ -12,6 +12,11 @@ st.write("""
 url = 'http://data.fixer.io/api/'
 ACCESS_KEY = os.environ.get('FIXER_API_KEY') 
 
+# https://data.fixer.io/api/timeseries
+#     ? access_key = API_KEY
+#     & start_date = 2012-05-01
+#     & end_date = 2012-05-25
+
 def make_request(url, TYPE='latest'):
     '''
     Makes request to the fixer.io/api.
