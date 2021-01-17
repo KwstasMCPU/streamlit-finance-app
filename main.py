@@ -1,21 +1,28 @@
 import streamlit as st
+import yfinance as yf
 import os
 import numpy as np
 import pandas as pd
 import requests
 
-st.title("Currency rates")
+
+from datetime import datetime, timedelta
+
+
+st.title("Finance App")
 st.write("""
-## Currencies from all over the world
+## Top Stocks and Currencies from all over the world
 """)
 
 url = 'http://data.fixer.io/api/'
 ACCESS_KEY = os.environ.get('FIXER_API_KEY') 
 
-# https://data.fixer.io/api/timeseries
-#     ? access_key = API_KEY
-#     & start_date = 2012-05-01
-#     & end_date = 2012-05-25
+
+def stock_time_series(tickerSymbol, start = '2020-01-01' , end = datetime.today().strftime('%Y-%m-%d')):
+    tickerData = yf.Ticker(tickerSymbol)
+    tickerDf = tickerData.history(period='1d', start=start , end=end)
+    return tickerDf
+
 
 def make_request(url, TYPE='latest'):
     '''
@@ -37,3 +44,7 @@ def make_request(url, TYPE='latest'):
     return rates.loc[['USD','GBP','CHF','DKK','JPY','SGD']]
 
 st.write(make_request(url, TYPE='latest'))
+df = stock_time_series('KO', '2019-05-01')
+st.line_chart(df.Close)
+st.line_chart(df.Volume)
+
