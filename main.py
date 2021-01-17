@@ -8,12 +8,6 @@ import requests
 
 from datetime import datetime, timedelta
 
-
-st.title("Finance App")
-st.write("""
-## Top Stocks and Currencies from all over the world
-""")
-
 url = 'http://data.fixer.io/api/'
 ACCESS_KEY = os.environ.get('FIXER_API_KEY') 
 
@@ -35,7 +29,7 @@ def make_request(url, TYPE='latest'):
         # measuring time in order to make a requests every 10 secs (since i am using the free key, i have limited amount of requests)
         data = requests.get(url_request).json()
         rates = pd.DataFrame(data)
-        rates = rates.drop(columns=['success', 'timestamp'])
+        rates = rates.drop(columns=['success', 'base','timestamp'])
         rates = rates.rename(columns={'date':'Date', 'rates':'Rate'})
     except KeyError:
         print('Pass a valid date (YYYY-MM-DD)')
@@ -43,8 +37,18 @@ def make_request(url, TYPE='latest'):
         print('historical date from 1999-01-01')
     return rates.loc[['USD','GBP','CHF','DKK','JPY','SGD']]
 
+
+st.title("Finance App")
+st.write("""
+## Top Stocks and Currencies from all over the world
+""")
+
+st.write("**Major currencies (EURO BASE)**")
 st.write(make_request(url, TYPE='latest'))
 df = stock_time_series('KO', '2019-05-01')
+st.write("**Coca-cola stock (KO) - Close**")
 st.line_chart(df.Close)
+st.write("**Coca-cola stock (KO) - Open**")
 st.line_chart(df.Volume)
 
+st.sidebar.header('User Input Parameters')
