@@ -4,42 +4,57 @@ import os
 import numpy as np
 import pandas as pd
 import requests
+from datetime import datetime
 
-
-from datetime import datetime, timedelta
+todays_date = datetime.today().strftime('%Y-%m-%d')
+st.write(todays_date)
 
 url = 'http://data.fixer.io/api/'
 ACCESS_KEY = os.environ.get('FIXER_API_KEY') 
 
 
+st.title("Finance App")
+st.write("""
+## Top Stocks and Currencies from all over the world
+""")
+
 st.sidebar.header('User Input Parameters')
 st.sidebar.write('Stocks')
+stock_ticker = st.sidebar.selectbox("Select stock", ("KO","TSLA","HPE","AMAT"))
 
-def stock_time_series_user_input():
-    # start_date = st.sidebar.slider('Start Date', value = datetime.today() - timedelta(365))
-    # final_date = st.sidebar.slider('Final Date', value = datetime.today())
-    start_date = st.sidebar.slider('Start Date', min_value= datetime(2015, 1, 1), max_value=datetime.today(), value = datetime.today() - timedelta(365))
-    final_date = st.sidebar.slider('Final Date', min_value= datetime(2015, 1, 1), max_value=datetime.today(), value = datetime.today())
+
+def user_input():
+    start_date = st.sidebar.slider('Start Date', datetime(2015, 1, 1), datetime(2021, 1, 1), value = datetime(2018, 1, 1))
+    final_date = st.sidebar.slider('Final Date', datetime(2015, 1, 1), datetime(2021, 1, 15), value = datetime(2021, 1, 1))
     start_date = start_date.strftime('%Y-%m-%d')
     final_date = final_date.strftime('%Y-%m-%d')
-    return [start_date, final_date]
+    # start_date = st.sidebar.slider('Start Date', 0, 100, 50)
+    # final_date = st.sidebar.slider('Final Date', 0, 100, 50)
+    inputs = [start_date, final_date]
+    return inputs
 
-start_end = stock_time_series_user_input()
+df = user_input()
 
-def stock_time_series(start_end):
-    tickerData = yf.Ticker('KO')
-    tickerDf = tickerData.history(period='1d', start=start_end[0] , end=start_end[1])
-    return tickerDf
+tickerData = yf.Ticker(stock_ticker)
+tickerDf = tickerData.history(period='1d', start=df[0] , end=df[1])
+st.write(f"**{stock_ticker} - Close**")
+st.write(f"From: {df[0]}  To: {df[1]}")
+st.line_chart(tickerDf.Close)
+st.write(f"**{stock_ticker} - Open**")
+st.line_chart(tickerDf.Volume)
 
 
-def make_request(url, TYPE='latest'):
+
+
+
+def make_request(url):
     '''
     Makes request to the fixer.io/api.
     the TYPE variable defines if a latest or a historic currency rate will be requested
     '''
     #data = {}
     try:
-        url_request = ''.join([url, TYPE, '?access_key=', ACCESS_KEY])
+        url_request = ''.join([url, 'latest', '?access_key=', ACCESS_KEY])
         # measuring time in order to make a requests every 10 secs (since i am using the free key, i have limited amount of requests)
         data = requests.get(url_request).json()
         rates = pd.DataFrame(data)
@@ -51,20 +66,13 @@ def make_request(url, TYPE='latest'):
         print('historical date from 1999-01-01')
     return rates.loc[['USD','GBP','CHF','DKK','JPY','SGD']]
 
-
-st.title("Finance App")
-st.write("""
-## Top Stocks and Currencies from all over the world
-""")
-
-
-
-
 st.write("**Major currencies (EURO BASE)**")
-st.write(make_request(url, TYPE='latest'))
+st.write(make_request(url))
 
-df = stock_time_series(start_end)
-st.write("**Coca-cola stock (KO) - Close**")
-st.line_chart(df.Close)
-st.write("**Coca-cola stock (KO) - Open**")
-st.line_chart(df.Volume)
+
+
+
+
+
+
+
