@@ -4,6 +4,6 @@
 - Note python 3.9.1 version was used
 - All the dependencies to run this app are on the requirements.txt file.
 - To install all required dependencies run command: `$ pip install -r requirements.txt`
-- Open a terminal and navigate to the directory where main.py is saved.
-- Run the file with: `streamlit run main.py` and a new browser window will open.
+- Open a terminal and navigate to the directory where `main.py` is saved.
+- Run the file with the command `$ streamlit run main.py` and a new browser window will open.
 
