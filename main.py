@@ -12,7 +12,6 @@ st.write(todays_date)
 url = 'http://data.fixer.io/api/'
 ACCESS_KEY = os.environ.get('FIXER_API_KEY') 
 
-
 st.title("Finance App")
 st.write("""
 ## Top Stocks and Currencies from all over the world
@@ -21,7 +20,6 @@ st.write("""
 st.sidebar.header('User Input Parameters')
 st.sidebar.write('Stocks')
 stock_ticker = st.sidebar.selectbox("Select stock", ("KO","TSLA","HPE","AMAT"))
-
 
 def user_input():
     start_date = st.sidebar.slider('Start Date', datetime(2015, 1, 1), datetime(2021, 1, 1), value = datetime(2018, 1, 1))
@@ -42,10 +40,6 @@ st.write(f"From: {df[0]}  To: {df[1]}")
 st.line_chart(tickerDf.Close)
 st.write(f"**{stock_ticker} - Open**")
 st.line_chart(tickerDf.Volume)
-
-
-
-
 
 def make_request(url):
     '''
