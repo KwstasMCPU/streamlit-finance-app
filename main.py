@@ -34,6 +34,7 @@ def make_request(url):
 def get_stock_data(inputs):
     tickerData = yf.Ticker(stock_ticker)
     tickerDf = tickerData.history(period='1d', start=inputs[0] , end=inputs[1])
+    print(tickerDf)
     return tickerDf
 
 ### WEB APP ###
@@ -65,7 +66,7 @@ tickerDf = get_stock_data(inputs)
 st.write(f"**{stock_ticker} - Close**")
 st.write(f"From: {inputs[0]}  To: {inputs[1]}")
 st.line_chart(tickerDf.Close)
-st.write(f"**{stock_ticker} - Open**")
+st.write(f"**{stock_ticker} - Volume**")
 st.line_chart(tickerDf.Volume)
 
 
