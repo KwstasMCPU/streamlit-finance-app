@@ -8,8 +8,6 @@ from datetime import datetime
 
 todays_date = datetime.today().strftime('%Y-%m-%d')
 
-# HELLO WORLD
-
 url = 'http://data.fixer.io/api/'
 ACCESS_KEY = os.environ.get('FIXER_API_KEY') 
 
@@ -20,23 +18,44 @@ def make_request(url):
     the TYPE variable defines if a latest or a historic currency rate will be requested
     '''
     #data = {}
-    try:
-        url_request = ''.join([url, 'latest', '?access_key=', ACCESS_KEY])
-        print('hello world')
-        # measuring time in order to make a requests every 10 secs (since i am using the free key, i have limited amount of requests)
-        data = requests.get(url_request).json()
-        rates = pd.DataFrame(data)
-        rates = rates.drop(columns=['success', 'base','timestamp'])
-        rates = rates.rename(columns={'date':'Date', 'rates':'Rate'})
-    except Exception as e:
-        print(e)
-    return rates.loc[['USD','GBP','CHF','DKK','JPY','SGD']]
+
+    url_request = ''.join([url, 'latest', '?access_key=', ACCESS_KEY])
+    # measuring time in order to make a requests every 10 secs (since i am using the free key, i have limited amount of requests)
+    data = requests.get(url_request).json()
+    rates = pd.DataFrame(data)
+    rates = rates.drop(columns=['success', 'base','timestamp'])
+    rates = rates.rename(columns={'date':'Date', 'rates':'Rate'})
+    return rates.loc[['USD','GBP','DKK','JPY']]
+
 
 @st.cache
+def make_request_2(url):
+    '''
+    Makes request to the fixer.io/api.
+    the TYPE variable defines if a latest or a historic currency rate will be requested
+    '''
+    #data = {}
+
+    url_request = ''.join([url, 'latest', '?access_key=', ACCESS_KEY])
+    # measuring time in order to make a requests every 10 secs (since i am using the free key, i have limited amount of requests)
+    data = requests.get(url_request).json()
+    rates2 = pd.DataFrame(data)
+
+    # print(data)
+    # rates = rates.drop(columns=['success', 'base','timestamp'])
+    # rates = rates.rename(columns={'date':'Date', 'rates':'Rate'})
+    test_r = rates2.loc[['USD','GBP','JPY']]
+    return test_r.rates
+
+
+def change_base(rates2, base):
+    base_cur = rates2.loc[base]
+    
+    return rates2 / base_cur
+
 def get_stock_data(inputs):
     tickerData = yf.Ticker(stock_ticker)
     tickerDf = tickerData.history(period='1d', start=inputs[0] , end=inputs[1])
-    print(tickerDf)
     return tickerDf
 
 ### WEB APP ###
@@ -55,7 +74,7 @@ st.sidebar.write('Stocks')
     # user inputs #
 stock_ticker = st.sidebar.selectbox("Select stock", ("KO","TSLA","HPE","AMAT"))
 
-currency_class = st.sidebar.radio('Currency class', ('Major','Show top 25','Show All'))
+currency_class = st.sidebar.radio('Currency Base', ('EUR','USD','GBP'))
 
 start_date = st.sidebar.slider('Start Date', datetime(2015, 1, 1), datetime(2021, 1, 1), value = datetime(2018, 1, 1))
 final_date = st.sidebar.slider('Final Date', datetime(2015, 1, 1), datetime(2021, 1, 15), value = datetime(2021, 1, 1))
@@ -76,7 +95,7 @@ st.line_chart(tickerDf.Volume)
 
 
 
-
+print(change_base(make_request_2(url), 'USD'))
 
 
 
