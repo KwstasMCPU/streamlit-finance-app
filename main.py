@@ -8,6 +8,8 @@ from datetime import datetime
 
 todays_date = datetime.today().strftime('%Y-%m-%d')
 
+# HELLO WORLD
+
 url = 'http://data.fixer.io/api/'
 ACCESS_KEY = os.environ.get('FIXER_API_KEY') 
 
@@ -52,6 +54,8 @@ st.sidebar.write('Stocks')
 
     # user inputs #
 stock_ticker = st.sidebar.selectbox("Select stock", ("KO","TSLA","HPE","AMAT"))
+
+currency_class = st.sidebar.radio('Currency class', ('Major','Show top 25','Show All'))
 
 start_date = st.sidebar.slider('Start Date', datetime(2015, 1, 1), datetime(2021, 1, 1), value = datetime(2018, 1, 1))
 final_date = st.sidebar.slider('Final Date', datetime(2015, 1, 1), datetime(2021, 1, 15), value = datetime(2021, 1, 1))
