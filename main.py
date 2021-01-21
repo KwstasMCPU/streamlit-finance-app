@@ -12,46 +12,30 @@ url = 'http://data.fixer.io/api/'
 ACCESS_KEY = os.environ.get('FIXER_API_KEY') 
 
 @st.cache
-def make_request(url):
+def make_request(url, base = 'EUR'):
     '''
     Makes request to the fixer.io/api.
     the TYPE variable defines if a latest or a historic currency rate will be requested
     '''
-    #data = {}
-
     url_request = ''.join([url, 'latest', '?access_key=', ACCESS_KEY])
-    # measuring time in order to make a requests every 10 secs (since i am using the free key, i have limited amount of requests)
     data = requests.get(url_request).json()
     rates = pd.DataFrame(data)
     rates = rates.drop(columns=['success', 'base','timestamp'])
     rates = rates.rename(columns={'date':'Date', 'rates':'Rate'})
-    return rates.loc[['USD','GBP','DKK','JPY']]
+    major_rates_base_EUR = rates.loc[['USD','GBP','DKK','CHF','JPY','AUD','CAD']]
+    if base != 'EUR':
+        major_rates_in_other_base = change_base(major_rates_base_EUR, base)
+        return major_rates_in_other_base
+    return major_rates_base_EUR
 
-
-@st.cache
-def make_request_2(url):
+def change_base(rates_df, base):
     '''
-    Makes request to the fixer.io/api.
-    the TYPE variable defines if a latest or a historic currency rate will be requested
+    This functions calculates the exchange rates with other BASE. Uses the cross exchange formula for the calculation
     '''
-    #data = {}
-
-    url_request = ''.join([url, 'latest', '?access_key=', ACCESS_KEY])
-    # measuring time in order to make a requests every 10 secs (since i am using the free key, i have limited amount of requests)
-    data = requests.get(url_request).json()
-    rates2 = pd.DataFrame(data)
-
-    # print(data)
-    # rates = rates.drop(columns=['success', 'base','timestamp'])
-    # rates = rates.rename(columns={'date':'Date', 'rates':'Rate'})
-    test_r = rates2.loc[['USD','GBP','JPY']]
-    return test_r.rates
-
-
-def change_base(rates2, base):
-    base_cur = rates2.loc[base]
-    
-    return rates2 / base_cur
+    base_cur = rates_df.Rate.loc[base]
+    rates_df.Rate = rates_df.Rate / base_cur
+    BASE_to_EUR_rate = 1.0 / base_cur
+    return rates_df
 
 def get_stock_data(inputs):
     tickerData = yf.Ticker(stock_ticker)
@@ -74,7 +58,7 @@ st.sidebar.write('Stocks')
     # user inputs #
 stock_ticker = st.sidebar.selectbox("Select stock", ("KO","TSLA","HPE","AMAT"))
 
-currency_class = st.sidebar.radio('Currency Base', ('EUR','USD','GBP'))
+currency_base = st.sidebar.radio('Currency Base', ('EUR','USD','GBP','DKK'))
 
 start_date = st.sidebar.slider('Start Date', datetime(2015, 1, 1), datetime(2021, 1, 1), value = datetime(2018, 1, 1))
 final_date = st.sidebar.slider('Final Date', datetime(2015, 1, 1), datetime(2021, 1, 15), value = datetime(2021, 1, 1))
@@ -82,8 +66,8 @@ start_date = start_date.strftime('%Y-%m-%d')
 final_date = final_date.strftime('%Y-%m-%d')
 inputs = [start_date, final_date]
 
-st.write("**Major currencies (EURO BASE)**")
-st.write(make_request(url))
+st.write(f"**Major currencies ({currency_base})**")
+st.write(make_request(url, currency_base))
 
 tickerDf = get_stock_data(inputs)
 st.write(f"**{stock_ticker} - Close**")
@@ -91,12 +75,6 @@ st.write(f"From: {inputs[0]}  To: {inputs[1]}")
 st.line_chart(tickerDf.Close)
 st.write(f"**{stock_ticker} - Volume**")
 st.line_chart(tickerDf.Volume)
-
-
-
-
-print(change_base(make_request_2(url), 'USD'))
-
 
 
 
