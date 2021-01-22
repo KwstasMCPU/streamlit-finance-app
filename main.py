@@ -74,7 +74,7 @@ stock_ticker = st.sidebar.selectbox("Select stock", ("KO","TSLA","HPE","AMAT"))
 currency_base = st.sidebar.radio('Currency Base', ('EUR','USD','GBP','DKK'))
 
 start_date = st.sidebar.slider('Start Date', datetime(2015, 1, 1), datetime(2021, 1, 1), value = datetime(2018, 1, 1))
-final_date = st.sidebar.slider('Final Date', datetime(2015, 1, 1), datetime(2021, 1, 15), value = datetime(2021, 1, 1))
+final_date = st.sidebar.slider('Final Date', datetime(2015, 1, 1), datetime(2021, 1, 15), value = datetime.strptime(todays_date, '%Y-%m-%d'))
 start_date = start_date.strftime('%Y-%m-%d')
 final_date = final_date.strftime('%Y-%m-%d')
 inputs = [start_date, final_date]
