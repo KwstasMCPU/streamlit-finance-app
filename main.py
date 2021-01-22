@@ -11,7 +11,6 @@ todays_date = datetime.today().strftime('%Y-%m-%d')
 url = 'http://data.fixer.io/api/'
 ACCESS_KEY = os.environ.get('FIXER_API_KEY') 
 
-@st.cache
 def make_request(url, base = 'EUR'):
     '''
     Makes request to the fixer.io/api.
@@ -30,11 +29,25 @@ def make_request(url, base = 'EUR'):
 
 def change_base(rates_df, base):
     '''
-    This functions calculates the exchange rates with other BASE. Uses the cross exchange formula for the calculation
+    This functions calculates the exchange rates for BASE other than EUR.
+    (There is no option to request to the API with different BASE on the free plan.)
+    Uses the cross exchange formula for the calculation. Also adds the BASE/EUR rate
+    to the returned dataframe.
+
+    Parameters:
+        rates_df (pandas DataFrame): The DataFrame contaning the rates, obtained by the make_request().
+        base (str): The Base currency the user wish to switch to. The first currency that appears in the pair quotation.
+
+    Returns:
+        rates_df (pandas DataFrame): The converted DataFrame with the rates converted to the new BASE currency. Also, the
+        BASE/EUR rate is calculated and added in the same index as the BASE/BASE would had been.
     '''
     base_cur = rates_df.Rate.loc[base]
     rates_df.Rate = rates_df.Rate / base_cur
     BASE_to_EUR_rate = 1.0 / base_cur
+    d = rates_df.Date.loc[base]
+    rates_df.rename(index={base:'EUR'}, inplace = True)
+    rates_df.loc['EUR'] = [d, BASE_to_EUR_rate]
     return rates_df
 
 def get_stock_data(inputs):
@@ -68,7 +81,6 @@ inputs = [start_date, final_date]
 
 st.write(f"**Major currencies ({currency_base})**")
 st.write(make_request(url, currency_base))
-
 tickerDf = get_stock_data(inputs)
 st.write(f"**{stock_ticker} - Close**")
 st.write(f"From: {inputs[0]}  To: {inputs[1]}")
