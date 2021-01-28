@@ -3,6 +3,7 @@ import yfinance as yf
 import os
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import requests
 from datetime import datetime, timedelta
 
@@ -11,7 +12,7 @@ todays_date = datetime.today().strftime('%Y-%m-%d')
 url = 'http://data.fixer.io/api/'
 ACCESS_KEY = os.environ.get('FIXER_API_KEY') 
 
-def make_request(url, base = 'EUR'):
+def make_request(base = 'EUR'):
     '''
     Makes request to the fixer.io/api.
     the TYPE variable defines if a latest or a historic currency rate will be requested
@@ -50,9 +51,16 @@ def change_base(rates_df, base):
     rates_df.loc['EUR'] = [d, BASE_to_EUR_rate]
     return rates_df
 
-def get_stock_data(inputs):
+def get_stock_data(input):
     tickerData = yf.Ticker(stock_ticker)
-    tickerDf = tickerData.history(period='1d', start=inputs[0] , end=inputs[1])
+    interval = '1m'
+    if input == '5d' or input == '1wk':
+        interval = '15m'
+    if input == '1mo' or input == '3mo':
+        interval = '1d'
+    if input == 'max':
+        interval = '5d'
+    tickerDf = tickerData.history(period=input, interval=interval, prepost=True)
     return tickerDf
 
 ### WEB APP ###
@@ -70,23 +78,23 @@ st.sidebar.write('Stocks')
 
     # user inputs #
 stock_ticker = st.sidebar.selectbox("Select stock", ("KO","TSLA","HPE","AMAT","GME"))
+input = st.sidebar.radio('Period', ("1d","5d","1wk","1mo","3mo","max"))
 
 currency_base = st.sidebar.radio('Currency Base', ('EUR','USD','GBP','DKK','JPY'))
 
-start_date = st.sidebar.slider('Start Date', datetime(2015, 1, 1), datetime.strptime(todays_date, '%Y-%m-%d') - timedelta(5), value = datetime.strptime(todays_date, '%Y-%m-%d') - timedelta(5))
-final_date = st.sidebar.slider('Final Date', datetime(2015, 1, 1), datetime(2021, 1, 15), value = datetime.strptime(todays_date, '%Y-%m-%d'))
-start_date = start_date.strftime('%Y-%m-%d')
-final_date = final_date.strftime('%Y-%m-%d')
-inputs = [start_date, final_date]
-
 st.write(f"**Major currencies ({currency_base})**")
-st.write(make_request(url, currency_base))
-tickerDf = get_stock_data(inputs)
+st.write(make_request(currency_base))
+tickerDf = get_stock_data(input)
 st.write(f"**{stock_ticker} - Close**")
-st.write(f"From: {inputs[0]}  To: {inputs[1]}")
-st.line_chart(tickerDf.Close)
+fig1, ax1 = plt.subplots()
+ax1.plot(tickerDf.index.values, tickerDf['Close'])
+st.pyplot(fig1)
+
 st.write(f"**{stock_ticker} - Volume**")
-st.line_chart(tickerDf.Volume)
+fig2, ax2 = plt.subplots()
+ax2.plot(tickerDf.index.values, tickerDf['Volume'])
+st.pyplot(fig2)
+
 
 
 
