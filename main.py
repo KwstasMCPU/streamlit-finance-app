@@ -86,14 +86,11 @@ st.write(f"**Major currencies ({currency_base})**")
 st.write(make_request(currency_base))
 tickerDf = get_stock_data(input)
 st.write(f"**{stock_ticker} - Close**")
-fig1, ax1 = plt.subplots()
-ax1.plot(tickerDf.index.values, tickerDf['Close'])
-st.pyplot(fig1)
+st.line_chart(tickerDf['Close'])
 
 st.write(f"**{stock_ticker} - Volume**")
-fig2, ax2 = plt.subplots()
-ax2.plot(tickerDf.index.values, tickerDf['Volume'])
-st.pyplot(fig2)
+st.line_chart(tickerDf['Volume'])
+
 
 
 
