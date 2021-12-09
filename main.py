@@ -6,6 +6,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import requests
 from datetime import datetime, timedelta
+import plotly.express as px
+import plotly.graph_objects as go
 
 todays_date = datetime.today().strftime('%Y-%m-%d')
 
@@ -63,6 +65,9 @@ def get_stock_data(input):
     tickerDf = tickerData.history(period=input, interval=interval, prepost=True)
     return tickerDf
 
+def crypto_data(coin_name):
+    pass
+
 ### WEB APP ###
 
 ## UPPER ##
@@ -76,20 +81,22 @@ st.write("""
 st.sidebar.header('User Input Parameters')
 st.sidebar.write('Stocks')
 
-    # user inputs #
+# user inputs #
 stock_ticker = st.sidebar.selectbox("Select stock", ("KO","TSLA","HPE","AMAT","GME"))
 input = st.sidebar.radio('Period', ("1d","5d","1wk","1mo","3mo","max"))
 
-currency_base = st.sidebar.radio('Currency Base', ('EUR','USD','GBP','DKK','JPY'))
+currency_base = st.sidebar.radio('Base Currency', ('EUR','USD','GBP','DKK','JPY'))
 
 st.write(f"**Major currencies ({currency_base})**")
 st.write(make_request(currency_base))
 tickerDf = get_stock_data(input)
 st.write(f"**{stock_ticker} - Close**")
-st.line_chart(tickerDf['Close'])
+fig1 = px.line(tickerDf, x=tickerDf.index, y="Close")
+st.plotly_chart(fig1)
 
 st.write(f"**{stock_ticker} - Volume**")
-st.line_chart(tickerDf['Volume'])
+fig2 = px.line(tickerDf, x=tickerDf.index, y="Volume")
+st.plotly_chart(fig2)
 
 
 
