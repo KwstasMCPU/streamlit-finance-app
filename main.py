@@ -65,8 +65,9 @@ def get_stock_data(input):
     tickerDf = tickerData.history(period=input, interval=interval, prepost=True)
     return tickerDf
 
-def crypto_data(coin_name):
-    pass
+def get_crypto_data(coin_name):
+    crypto_data = yf.download(tickers='{}-USD'.format(coin_name), period = '22h', interval = '15m')
+    return crypto_data
 
 ### WEB APP ###
 
@@ -81,11 +82,18 @@ st.write("""
 st.sidebar.header('User Input Parameters')
 st.sidebar.write('Stocks')
 
-# user inputs #
+#### user inputs #
+# currencies
+currency_base = st.sidebar.radio('Base Currency', ('EUR','USD','GBP','DKK','JPY'))
+
+# stocks
 stock_ticker = st.sidebar.selectbox("Select stock", ("KO","TSLA","HPE","AMAT","GME"))
 input = st.sidebar.radio('Period', ("1d","5d","1wk","1mo","3mo","max"))
 
-currency_base = st.sidebar.radio('Base Currency', ('EUR','USD','GBP','DKK','JPY'))
+# crypto
+crypto_ticker = st.sidebar.selectbox("Select crypto", ("BTC","ETH"))
+
+
 
 st.write(f"**Major currencies ({currency_base})**")
 st.write(make_request(currency_base))
@@ -98,6 +106,39 @@ st.write(f"**{stock_ticker} - Volume**")
 fig2 = px.line(tickerDf, x=tickerDf.index, y="Volume")
 st.plotly_chart(fig2)
 
+st.write("Crypto")
+crypto_data = get_crypto_data(crypto_ticker)
+#declare figure
+
+#Candlestick
+fig3 = go.Figure(data=[go.Candlestick(
+                x=crypto_data.index,
+                open=crypto_data.Open,
+                high=crypto_data.High,
+                low=crypto_data.Low,
+                close=crypto_data.Close, 
+                name = 'market data')
+               ])
+
+# Add titles
+fig3.update_layout(
+    title='{} live share price evolution'.format(crypto_ticker),
+    yaxis_title='{} Price (kUS Dollars)'.format(crypto_ticker))
+
+# X-Axes
+fig3.update_xaxes(
+    rangeslider_visible=True,
+    rangeselector=dict(
+        buttons=list([
+            dict(count=15, label="15m", step="minute", stepmode="backward"),
+            dict(count=45, label="45m", step="minute", stepmode="backward"),
+            dict(count=1, label="HTD", step="hour", stepmode="todate"),
+            dict(count=6, label="6h", step="hour", stepmode="backward"),
+            dict(step="all")
+        ])
+    )
+)
+st.plotly_chart(fig3)
 
 
 
